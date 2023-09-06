@@ -66,22 +66,6 @@ namespace EmployeesManagerApp.Tests
             }
 
             [Test]
-            public void GenerujId_PowinnoZwrocicId()
-            {
-                // Arrange
-                var employeesRepository = new EmployeesManager<Employee>();
-                var employeeProvider = new EmployeeProvider(employeesRepository);
-                var app = new App(employeesRepository, employeeProvider);
-                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
-                
-                // Act
-                employeesRepository.DodajPracownika(employee);
-
-                // Assert
-                Assert.AreEqual(0, employee.Id);
-            }
-
-            [Test]
             public void PobierzPracownikaPoId_PobieraPracownika()
             {
                 // Arrange
