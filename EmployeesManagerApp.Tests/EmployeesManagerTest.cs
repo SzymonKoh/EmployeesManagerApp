@@ -1,7 +1,5 @@
 using EmployeesManagerApp.Data.Entities;
 using EmployeesManagerApp.Data.Repositories;
-using EmployeesManagerApp;
-using System.Text;
 using EmployeesManagerApp.Components;
 
 namespace EmployeesManagerApp.Tests
