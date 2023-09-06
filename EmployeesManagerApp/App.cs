@@ -1,7 +1,6 @@
 ﻿using EmployeesManagerApp.Components;
 using EmployeesManagerApp.Data.Entities;
 using EmployeesManagerApp.Data.Repositories;
-using System.Runtime.CompilerServices;
 
 namespace EmployeesManagerApp
 {

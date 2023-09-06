@@ -1,5 +1,4 @@
 ﻿using EmployeesManagerApp.Data.Entities;
-using Microsoft.EntityFrameworkCore;
 using System.Xml.Serialization;
 
 namespace EmployeesManagerApp.Data.Repositories
