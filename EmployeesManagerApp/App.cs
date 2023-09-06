@@ -1,6 +1,7 @@
 ﻿using EmployeesManagerApp.Components;
 using EmployeesManagerApp.Data.Entities;
 using EmployeesManagerApp.Data.Repositories;
+using System.Runtime.CompilerServices;
 
 namespace EmployeesManagerApp
 {
@@ -18,6 +19,32 @@ namespace EmployeesManagerApp
 
         public void Run()
         {
+            _employeesRepository.PracownikDodany += PracownikDodanyPomyślnie;
+            _employeesRepository.PracownikUsuniety += PracownikUsunietyPomyślnie;
+
+            static void PracownikDodanyPomyślnie(object? sender, Employee e)
+            {
+                Console.WriteLine($"\nPracownik dodany pomyślnie:");
+                Console.WriteLine($"\n{e.ToString()}");
+            }
+
+            static void PracownikUsunietyPomyślnie(object? sender, Employee e)
+            {
+                Console.WriteLine($"\nPracownik usunięty pomyślnie:");
+                Console.WriteLine($"\nPracownik {e.Imie} {e.Nazwisko} usunięty.");
+            }
+
+            int GenerujId()
+            {
+                var existingIds = _employeesRepository.GetAll().Select(e => e.Id).ToList();
+                int newId = 1;
+                while (existingIds.Contains(newId))
+                {
+                    newId++;
+                }
+                return newId;
+            }
+
             bool WalidujDane(string imie, string nazwisko, string stanowisko, DateTime dataUrodzenia)
             {
                 if (string.IsNullOrWhiteSpace(imie) || string.IsNullOrWhiteSpace(nazwisko) || string.IsNullOrWhiteSpace(stanowisko))
@@ -61,6 +88,7 @@ namespace EmployeesManagerApp
                 Console.WriteLine("6. Zapisz do pliku XML");
                 Console.WriteLine("7. Wczytaj plik XML");
                 Console.WriteLine("0. Wyjdź z aplikacji, pmiętaj o zapisie danych do pliku XML");
+                Console.WriteLine();
 
                 int wybor;
                 if (int.TryParse(Console.ReadLine(), out wybor))
@@ -83,12 +111,12 @@ namespace EmployeesManagerApp
                             {
                                 _employeesRepository.DodajPracownika(new Employee
                                 {
+                                    Id = GenerujId(),
                                     Imie = imie,
                                     Nazwisko = nazwisko,
                                     Stanowisko = stanowisko,
                                     DataUrodzenia = dataUrodzenia
-                                }); ;
-                                Console.Write($"\nPracownik dodany pomyślnie.");
+                                });
                             }
                             else
                             {
@@ -121,7 +149,18 @@ namespace EmployeesManagerApp
                                     {
                                         if (WalidujDane(noweImie, noweNazwisko, noweStanowisko, nowaDataUrodzenia))
                                         {
-                                            _employeesRepository.EdytujDanePracownika(pracownikDoEdycji, noweImie, noweNazwisko, noweStanowisko, nowaDataUrodzenia);
+                                            if (pracownikDoEdycji != null)
+                                            {
+                                                pracownikDoEdycji.Id = id1;
+                                                pracownikDoEdycji.Imie = noweImie;
+                                                pracownikDoEdycji.Nazwisko = noweNazwisko;
+                                                pracownikDoEdycji.Stanowisko = noweStanowisko;
+                                                pracownikDoEdycji.DataUrodzenia = nowaDataUrodzenia;
+                                            }
+                                            else
+                                            {
+                                                throw new Exception("\nNieprawidłowe dane pracownika.");
+                                            }
                                         }
                                         Console.WriteLine($"\nDane pracownika {pracownikDoEdycji.Imie} {pracownikDoEdycji.Nazwisko} zostały zaktualizowane.");
                                     }
@@ -138,7 +177,27 @@ namespace EmployeesManagerApp
                             break;
 
                         case 3:
-                            _employeesRepository.WyswietlInformacjeOPracownikach();
+                            if (_employeesRepository != null)
+                            {
+                                bool isNotEmpty = false;
+                                foreach (var employee in _employeesRepository.GetAll())
+                                {
+                                    isNotEmpty = true;
+                                }
+
+                                if (!isNotEmpty)
+                                {
+                                    Console.WriteLine("\nLista pracowników jest pusta.");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("\nLista pracowników:");
+                                    foreach (var employee in _employeesRepository.GetAll())
+                                    {
+                                        Console.WriteLine(employee.ToString());
+                                    }
+                                }
+                            }
                             break;
 
                         case 4:
@@ -149,7 +208,6 @@ namespace EmployeesManagerApp
                                 if (pracownikDoUsuniecia != null)
                                 {
                                     _employeesRepository.UsunPracownika(pracownikDoUsuniecia);
-                                    Console.WriteLine($"\nPracownik {pracownikDoUsuniecia.Imie} {pracownikDoUsuniecia.Nazwisko} usunięty.");
                                 }
                                 else if (pracownikDoUsuniecia == null)
                                 {
@@ -302,9 +360,9 @@ namespace EmployeesManagerApp
                                 _employeesRepository.ZapiszDoPlikuXml(nazwaPlikuZapisu);
                                 Console.Write($"\nPlik {nazwaPlikuZapisu} stworzony.");
                             }
-                            catch (Exception ex) 
-                            { 
-                                Console.WriteLine(ex.Message); 
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
                             }
                             break;
 

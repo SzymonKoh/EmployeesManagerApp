@@ -1,4 +1,5 @@
 ﻿using EmployeesManagerApp.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Xml.Serialization;
 
 namespace EmployeesManagerApp.Data.Repositories
@@ -7,20 +8,21 @@ namespace EmployeesManagerApp.Data.Repositories
     {
         public List<T> _employees = new();
 
+        public event EventHandler<T>? PracownikDodany;
+        public event EventHandler<T>? PracownikUsuniety;
+
         public void DodajPracownika(T employee)
         {
-            employee.Id = _employees.Count + 1;
             _employees.Add(employee);
+            PracownikDodany?.Invoke(this, employee);
         }
 
-        public T PobierzPracownikaPoId(int id) => _employees.FirstOrDefault(e => e.Id == id);
+        public T? PobierzPracownikaPoId(int id) => _employees.Find(e => e.Id == id);
 
         public void UsunPracownika(T employee)
         {
-            if (_employees.Contains(employee))
-            {
-                _employees.Remove(employee);
-            }
+            _employees.Remove(employee);
+            PracownikUsuniety?.Invoke(this, employee);
         }
 
         public IEnumerable<T> GetAll() => _employees.ToList();
@@ -54,37 +56,6 @@ namespace EmployeesManagerApp.Data.Repositories
             else
             {
                 throw new Exception("Plik XML nie istnieje.");
-            }
-        }
-
-        public void WyswietlInformacjeOPracownikach()
-        {
-            if (_employees.Count == 0)
-            {
-                Console.WriteLine("\nLista pracowników jest pusta.");
-            }
-            else
-            {
-                Console.WriteLine("\nLista pracowników:");
-                foreach (var employee in _employees)
-                {
-                    Console.WriteLine(employee.ToString());
-                }
-            }
-        }
-
-        public void EdytujDanePracownika(Employee employee, string noweImie, string noweNazwisko, string noweStanowisko, DateTime nowaDataUrodzenia)
-        {
-            if (employee != null)
-            {
-                employee.Imie = noweImie;
-                employee.Nazwisko = noweNazwisko;
-                employee.Stanowisko = noweStanowisko;
-                employee.DataUrodzenia = nowaDataUrodzenia;
-            }
-            else
-            {
-                throw new Exception("\nNieprawidłowe dane pracownika.");
             }
         }
 

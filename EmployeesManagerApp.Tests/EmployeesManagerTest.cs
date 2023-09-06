@@ -1,6 +1,8 @@
 using EmployeesManagerApp.Data.Entities;
 using EmployeesManagerApp.Data.Repositories;
+using EmployeesManagerApp;
 using System.Text;
+using EmployeesManagerApp.Components;
 
 namespace EmployeesManagerApp.Tests
 {
@@ -33,7 +35,7 @@ namespace EmployeesManagerApp.Tests
             public void DodajPracownika_DodajePracownika()
             {
                 // Arrange
-                var manager = new EmployeesManager<Employee>();
+                var manager = new EmployeesManager<Employee>( );
                 var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
 
                 // Act
@@ -41,7 +43,44 @@ namespace EmployeesManagerApp.Tests
 
                 // Assert
                 Assert.AreEqual(1, manager.GetAll().Count());
-                Assert.AreEqual(1, employee.Id);
+                Assert.AreEqual(0, employee.Id);
+            }
+
+            [Test]
+            public void DodajPracownika_PoprawnieDodanoPracownika_Wywo³ujeZdarzeniePracownikDodany()
+            {
+                // Arrange
+                var manager = new EmployeesManager<Employee>();
+                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
+
+                bool zdarzenieWywolane = false;
+                manager.PracownikDodany += (sender, e) =>
+                {
+                    zdarzenieWywolane = true;
+                };
+
+                // Act
+                manager.DodajPracownika(employee);
+
+                // Assert
+                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie 'PracownikDodany' nie zosta³o wywo³ane.");
+                CollectionAssert.Contains(manager.GetAll(), employee, "Pracownik nie zosta³ dodany do kolekcji.");
+            }
+
+            [Test]
+            public void GenerujId_PowinnoZwrocicId()
+            {
+                // Arrange
+                var employeesRepository = new EmployeesManager<Employee>();
+                var employeeProvider = new EmployeeProvider(employeesRepository);
+                var app = new App(employeesRepository, employeeProvider);
+                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
+                
+                // Act
+                employeesRepository.DodajPracownika(employee);
+
+                // Assert
+                Assert.AreEqual(0, employee.Id);
             }
 
             [Test]
@@ -53,7 +92,7 @@ namespace EmployeesManagerApp.Tests
                 manager.DodajPracownika(employee);
 
                 // Act
-                var retrievedEmployee = manager.PobierzPracownikaPoId(1);
+                var retrievedEmployee = manager.PobierzPracownikaPoId(0);
 
                 // Assert
                 Assert.AreEqual(employee, retrievedEmployee);
@@ -75,6 +114,28 @@ namespace EmployeesManagerApp.Tests
             }
 
             [Test]
+            public void UsunPracownika_PoprawnieUsunietoPracownika_Wywo³ujeZdarzeniePracownikUsuniety()
+            {
+                // Arrange
+                var manager = new EmployeesManager<Employee>();
+                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
+                manager.DodajPracownika(employee);
+
+                bool zdarzenieWywolane = false;
+                manager.PracownikUsuniety += (sender, e) =>
+                {
+                    zdarzenieWywolane = true;
+                };
+
+                // Act
+                manager.UsunPracownika(employee);
+
+                // Assert
+                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie PracownikUsuniety nie zosta³o wywo³ane.");
+                CollectionAssert.DoesNotContain(manager.GetAll(), employee, "Pracownik nie zosta³ usuniêty z kolekcji.");
+            }
+
+            [Test]
             public void ZapiszDoPlikuXml_PoprawneZapisywanieDoPliku()
             {
                 // Arrange
@@ -93,7 +154,7 @@ namespace EmployeesManagerApp.Tests
             {
                 // Arrange
                 var manager = new EmployeesManager<Employee>();
-                manager.ZapiszDoPlikuXml(tempXmlFileName); // Zapisujemy dane do pliku
+                manager.ZapiszDoPlikuXml(tempXmlFileName); 
 
                 // Act
                 manager.WczytajZPlikuXml(tempXmlFileName);
@@ -104,7 +165,7 @@ namespace EmployeesManagerApp.Tests
                     var loadedEmployees = manager.GetAll();
                 });
 
-                // Clean up - usuñ plik po zakoñczeniu testu
+                // Clean up 
                 File.Delete(tempXmlFileName);
 
             }
@@ -120,82 +181,6 @@ namespace EmployeesManagerApp.Tests
                 Assert.Throws<Exception>(() =>
                 {
                     manager.WczytajZPlikuXml(nieistniejacyPlik);
-                });
-            }
-
-            [Test]
-            public void WyswietlInformacjeOPracownikach_ListaNieJestPusta_WyswietlaInformacje()
-            {
-                // Arrange
-                var manager = new EmployeesManager<Employee>();
-                var employee = new Employee
-                {
-                    Id = 1,
-                    Imie = "Jan",
-                    Nazwisko = "Dor",
-                    Stanowisko = "Programista",
-                    DataUrodzenia = new DateTime(1990, 1, 1)
-                };
-                manager.DodajPracownika(employee);
-
-                var expectedOutput = $"Lista pracowników:{Environment.NewLine}Id: 1, Imie: Jan, Nazwisko: Dor, Stanowisko: Programista, DataUrodzenia: 01/01/1990{Environment.NewLine}";
-                var consoleOutput = new StringBuilder();
-                Console.SetOut(new StringWriter(consoleOutput));
-
-                // Act
-                manager.WyswietlInformacjeOPracownikach();
-
-                // Assert
-                Assert.AreEqual(expectedOutput, consoleOutput.ToString());
-            }
-
-            [Test]
-            public void WyswietlInformacjeOPracownikach_ListaJestPusta_WyswietlaKomunikat()
-            {
-                // Arrange
-                var manager = new EmployeesManager<Employee>();
-                var expectedOutput = "Lista pracowników jest pusta." + Environment.NewLine;
-                var consoleOutput = new StringBuilder();
-                Console.SetOut(new StringWriter(consoleOutput));
-
-                // Act
-                manager.WyswietlInformacjeOPracownikach();
-
-                // Assert
-                Assert.AreEqual(expectedOutput, consoleOutput.ToString());
-            }
-
-            [Test]
-            public void EdytujDanePracownika_EdytujeDane()
-            {
-                // Arrange
-                var manager = new EmployeesManager<Employee>();
-                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
-                manager.DodajPracownika(employee);
-
-                // Act
-                manager.EdytujDanePracownika(employee, "Jan", "Smok", "Architekt", new DateTime(1990, 1, 1));
-
-                // Assert
-                var editedEmployee = manager.PobierzPracownikaPoId(1);
-                Assert.AreEqual("Jan", editedEmployee.Imie);
-                Assert.AreEqual("Smok", editedEmployee.Nazwisko);
-                Assert.AreEqual("Architekt", editedEmployee.Stanowisko);
-                Assert.AreEqual(new DateTime(1990, 1, 1), editedEmployee.DataUrodzenia);
-            }
-
-            [Test]
-            public void EdytujDanePracownika_ZleDanePracownika_PowinienZwrocicException()
-            {
-                // Arrange
-                var manager = new EmployeesManager<Employee>();
-                var employee = new Employee { Imie = "Jacek", Nazwisko = "Dor", Stanowisko = "Programista", DataUrodzenia = new DateTime(1990, 4, 1) };
-                manager.DodajPracownika(employee);
-
-                // Act and Assert - u¿ywamy Assert.Throws
-                Assert.Throws<Exception>(() =>
-                {
-                    manager.EdytujDanePracownika(null, "Jan", "Smok", "Architekt", new DateTime(1990, 1, 1));
                 });
             }
 

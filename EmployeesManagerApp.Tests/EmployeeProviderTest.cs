@@ -15,9 +15,9 @@ namespace EmployeesManagerApp.Tests
             var employeeProvider = new EmployeeProvider(mockEmployeesProvider.Object);
             var employees = new List<Employee>
             {
-                new Employee { Id = 3 },
-                new Employee { Id = 1 },
-                new Employee { Id = 2 }
+                new Employee { Id = 2 },
+                new Employee { Id = 0 },
+                new Employee { Id = 1 }
             };
             mockEmployeesProvider.Setup(m => m.GetAll()).Returns(employees);
 
@@ -25,7 +25,7 @@ namespace EmployeesManagerApp.Tests
             var sortedEmployees = employeeProvider.SortujPracownikowWedlugId();
 
             // Assert
-            CollectionAssert.AreEqual(new List<int> { 1, 2, 3 }, sortedEmployees.Select(e => e.Id).ToList());
+            CollectionAssert.AreEqual(new List<int> { 0, 1, 2 }, sortedEmployees.Select(e => e.Id).ToList());
         }
 
         [Test]

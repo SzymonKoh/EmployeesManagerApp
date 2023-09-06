@@ -10,7 +10,7 @@ namespace EmployeesManagerApp.Tests
             // Arrange
             var employee = new Employee
             {
-                Id = 1,
+                Id = 0,
                 Imie = "Jan",
                 Nazwisko = "Dor",
                 Stanowisko = "Programista",
@@ -21,7 +21,7 @@ namespace EmployeesManagerApp.Tests
             string result = employee.ToString();
 
             // Assert
-            string expected = "Id: 1, Imie: Jan, Nazwisko: Dor, Stanowisko: Programista, DataUrodzenia: 01/01/1990";
+            string expected = "Id: 0, Imie: Jan, Nazwisko: Dor, Stanowisko: Programista, DataUrodzenia: 01/01/1990";
             Assert.AreEqual(expected, result);
         }
     }
