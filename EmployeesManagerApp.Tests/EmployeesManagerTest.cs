@@ -63,8 +63,8 @@ namespace EmployeesManagerApp.Tests
                 manager.DodajPracownika(employee);
 
                 // Assert
-                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie 'PracownikDodany' nie zosta³o wywo³ane.");
-                CollectionAssert.Contains(manager.GetAll(), employee, "Pracownik nie zosta³ dodany do kolekcji.");
+                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie 'PracownikDodany' zosta³o wywo³ane.");
+                CollectionAssert.Contains(manager.GetAll(), employee, "Pracownik zosta³ dodany do kolekcji.");
             }
 
             [Test]
