@@ -131,8 +131,8 @@ namespace EmployeesManagerApp.Tests
                 manager.UsunPracownika(employee);
 
                 // Assert
-                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie PracownikUsuniety nie zosta³o wywo³ane.");
-                CollectionAssert.DoesNotContain(manager.GetAll(), employee, "Pracownik nie zosta³ usuniêty z kolekcji.");
+                Assert.IsTrue(zdarzenieWywolane, "Zdarzenie PracownikUsuniety zosta³o wywo³ane.");
+                CollectionAssert.DoesNotContain(manager.GetAll(), employee, "Pracownik zosta³ usuniêty z kolekcji.");
             }
 
             [Test]
